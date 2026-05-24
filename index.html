@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Latte Lounge – Serveuse</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LL Serveuse">
+<meta name="theme-color" content="#1B2A4A">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Jost:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1B2A4A; --navy2:#243558; --cream:#F5F0E8; --cream2:#EDE6D6;
+  --gold:#B8942A; --gold2:#D4AF5A; --green:#27AE60; --red:#C0392B;
+  --text:#1B2A4A; --muted:#8A7A6A; --border:rgba(184,148,42,.25); --white:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;padding-bottom:100px;}
+
+/* ── HEADER ── */
+header{background:var(--navy);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold);}
+.h-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold2);letter-spacing:3px;}
+.h-sub{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-top:2px;}
+.h-name{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold2);background:rgba(184,148,42,.15);border:1px solid var(--gold);border-radius:20px;padding:4px 12px;}
+.h-logout{background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.5);font-size:12px;padding:5px 10px;cursor:pointer;}
+.h-logout:hover{border-color:var(--red);color:var(--red);}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;z-index:999;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.login-icon{font-size:56px;margin-bottom:12px;}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold2);letter-spacing:3px;margin-bottom:4px;}
+.login-sub{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:3px;margin-bottom:36px;}
+.login-card{background:rgba(255,255,255,.06);border:1px solid rgba(184,148,42,.3);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;}
+.login-label{font-size:12px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;}
+.login-input{width:100%;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(184,148,42,.3);border-radius:12px;color:#fff;font-family:'Jost',sans-serif;font-size:16px;outline:none;margin-bottom:16px;text-align:center;letter-spacing:1px;}
+.login-input:focus{border-color:var(--gold);}
+.login-input::placeholder{color:rgba(255,255,255,.3);}
+.login-btn{width:100%;padding:15px;background:var(--gold);border:none;border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy);cursor:pointer;letter-spacing:1px;}
+.login-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── PAGES ── */
+.page{display:none;}.page.active{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── PAGE 1: MENU ── */
+.menu-top{padding:14px 16px 8px;display:flex;align-items:center;justify-content:space-between;}
+.menu-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--navy);}
+.order-count-badge{background:var(--navy);color:var(--gold2);font-family:'DM Mono',monospace;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;}
+
+.cat-scroll{display:flex;gap:8px;padding:8px 16px 10px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);}
+.cat-scroll::-webkit-scrollbar{display:none;}
+.cat-pill{background:var(--white);border:1.5px solid var(--border);color:var(--muted);font-size:11px;font-weight:600;padding:6px 12px;border-radius:30px;white-space:nowrap;cursor:pointer;flex-shrink:0;}
+.cat-pill.active{background:var(--navy);border-color:var(--navy);color:var(--gold2);}
+
+.cat-section{padding:14px 16px 4px;}
+.cat-name{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--navy);font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+.item-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);border-radius:12px;margin-bottom:7px;border:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;transition:all .15s;}
+.item-row.selected{border-color:var(--gold);background:rgba(184,148,42,.04);}
+.item-row:active{transform:scale(.98);}
+.item-left{flex:1;}
+.item-name{font-size:13px;font-weight:500;color:var(--navy);}
+.item-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.item-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.item-price{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);font-weight:700;}
+.item-add{width:28px;height:28px;border-radius:50%;background:var(--navy);border:none;color:var(--gold2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.item-add:active{background:var(--gold);color:var(--navy);}
+.item-badge{position:absolute;top:-7px;right:-7px;background:var(--gold);color:var(--navy);font-family:'DM Mono',monospace;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+
+/* ── CART BAR ── */
+.cart-bar{position:fixed;bottom:16px;left:16px;right:16px;background:var(--navy);border-radius:16px;padding:14px 20px;display:none;justify-content:space-between;align-items:center;box-shadow:0 8px 32px rgba(27,42,74,.3),0 0 0 1px var(--gold);cursor:pointer;z-index:60;}
+.cart-bar.visible{display:flex;animation:popUp .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.cb-left{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold2);font-weight:700;}
+.cb-center{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold2);}
+.cb-right{font-family:'DM Mono',monospace;font-size:14px;color:var(--gold2);font-weight:700;}
+
+/* ── PAGE 2: PANIER ── */
+.page-title{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--navy);padding:18px 16px 0;}
+.cart-wrap{padding:14px 16px;}
+.cart-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--white);border-radius:12px;margin-bottom:8px;border:1px solid var(--border);}
+.ci-name{flex:1;font-size:13px;font-weight:500;color:var(--navy);}
+.qty-ctrl{display:flex;align-items:center;gap:8px;}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--cream);color:var(--navy);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.qty-btn:active{background:var(--navy);color:var(--gold2);}
+.qty-num{font-family:'DM Mono',monospace;font-size:14px;width:22px;text-align:center;}
+.ci-price{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);font-weight:700;white-space:nowrap;}
+
+.notes-wrap{padding:0 16px 16px;}
+.notes-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+.notes-input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:12px;color:var(--navy);font-family:'Jost',sans-serif;font-size:14px;padding:12px 14px;resize:none;outline:none;}
+.notes-input:focus{border-color:var(--gold);}
+.notes-input::placeholder{color:var(--muted);}
+
+.total-bar{margin:0 16px 16px;background:var(--navy);border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;}
+.total-lbl{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;}
+.total-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold2);font-weight:700;}
+
+.btn-primary{width:calc(100% - 32px);margin:0 16px;padding:15px;background:var(--gold);border:none;border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy);cursor:pointer;margin-bottom:10px;letter-spacing:1px;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-secondary{width:calc(100% - 32px);margin:0 16px;padding:12px;background:transparent;border:1.5px solid var(--border);border-radius:12px;color:var(--muted);font-size:14px;cursor:pointer;}
+
+/* ── PAGE 3: CONFIRMATION ── */
+.confirm-wrap{padding:24px 16px;text-align:center;}
+.confirm-icon{font-size:64px;margin-bottom:12px;}
+.confirm-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--navy);margin-bottom:8px;font-weight:700;}
+.confirm-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;}
+.confirm-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;text-align:left;}
+.confirm-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);}
+.confirm-row:last-child{border-bottom:none;font-weight:700;color:var(--navy);font-size:15px;}
+.serveuse-badge{display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:var(--gold2);font-size:13px;font-weight:600;padding:8px 16px;border-radius:20px;margin-bottom:16px;border:1px solid var(--gold);}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:80px;left:16px;right:16px;background:var(--green);color:#fff;border-radius:14px;padding:14px 20px;font-size:14px;font-weight:700;text-align:center;z-index:500;display:none;box-shadow:0 8px 24px rgba(39,174,96,.4);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-icon">👩‍💼</div>
+  <div class="login-title">Latte Lounge</div>
+  <div class="login-sub">ESPACE SERVEUSE</div>
+  <div class="login-card">
+    <div class="login-label">Votre nom</div>
+    <input class="login-input" type="text" id="serveuseNom" placeholder="Entrez votre prénom" oninput="checkLogin()">
+    <button class="login-btn" id="loginBtn" onclick="doLogin()" disabled>Commencer →</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div>
+    <div class="h-logo">Latte Lounge</div>
+    <div class="h-sub">ESPACE SERVEUSE</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="h-name" id="headerName">—</div>
+    <button class="h-logout" onclick="doLogout()">⏏</button>
+  </div>
+</header>
+
+<!-- PAGE 1: MENU -->
+<div class="page active" id="page1">
+  <div class="menu-top">
+    <div class="menu-title">Menu</div>
+    <div class="order-count-badge" id="orderCount" style="display:none"></div>
+  </div>
+  <div class="cat-scroll" id="catTabs"></div>
+  <div id="menuContent"></div>
+</div>
+
+<!-- PAGE 2: PANIER -->
+<div class="page" id="page2">
+  <div class="page-title">Récapitulatif</div>
+  <div class="cart-wrap" id="cartItems"></div>
+  <div class="notes-wrap">
+    <div class="notes-label">Notes cuisine (optionnel)</div>
+    <textarea class="notes-input" id="notesInput" rows="2" placeholder="Ex: sans oignons, bien cuit..."></textarea>
+  </div>
+  <div class="total-bar">
+    <div class="total-lbl">Total</div>
+    <div class="total-val" id="totalVal">0 MRU</div>
+  </div>
+  <button class="btn-primary" id="btnValider" onclick="envoyerCommande()">✅ Envoyer à la caisse</button>
+  <button class="btn-secondary" onclick="goTo(1)" style="margin-top:0">← Modifier la commande</button>
+</div>
+
+<!-- PAGE 3: CONFIRMATION -->
+<div class="page" id="page3">
+  <div class="confirm-wrap">
+    <div class="confirm-icon">✅</div>
+    <div class="confirm-title">Commande envoyée !</div>
+    <div class="confirm-sub" id="confirmSub">La commande a été transmise à la caisse.<br>Le caissier va imprimer le ticket.</div>
+    <div class="serveuse-badge" id="serveuseConfirmBadge"></div>
+    <div class="confirm-card" id="confirmCard"></div>
+    <button class="btn-primary" onclick="nouvelleCommande()" style="width:100%;margin:0;">🔄 Nouvelle commande</button>
+  </div>
+</div>
+
+<!-- CART BAR -->
+<div class="cart-bar" id="cartBar" onclick="goTo(2)">
+  <span class="cb-left" id="cbQty">0 article</span>
+  <span class="cb-center">Voir le récap →</span>
+  <span class="cb-right" id="cbTotal">0 MRU</span>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Commande envoyée à la caisse !</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB={apiKey:"AIzaSyBZnorgx0FgFzQk-ynMWLWAGblA1797wL8",authDomain:"latte-lounge-caisse.firebaseapp.com",databaseURL:"https://latte-lounge-caisse-default-rtdb.europe-west1.firebasedatabase.app",projectId:"latte-lounge-caisse",storageBucket:"latte-lounge-caisse.firebasestorage.app",messagingSenderId:"864095614648",appId:"1:864095614648:web:4d827e02772b5b73fca64d"};
+const app=initializeApp(FB); const db=getDatabase(app);
+
+const MENU={
+  "☕ Boissons Chaudes":[["Expresso",60],["Café Nous Nous",80],["Double Expresso",100],["Café au Lait",80],["Cappuccino",100],["Chocolat Chaud",100],["Café Latte",100],["Café Crème",100],["Ice Coffee Au Chocolat",120],["Ice Coffee Au Caramel",120],["Café Americano",100]],
+  "🍵 Thés":[["The Lipton ou Marocain",50],["The au Citron",60],["The Lipton Lait",80]],
+  "🥤 Jus":[["Jus D'Orange",100],["Jus De Citron",100],["Jus De Pomme",100],["Jus D'Avocat",100],["Jus De Mangue",100],["Jus De Pastèque",100],["Jus D'Ananas",100],["Jus De Kiwi",100]],
+  "🥛 Milkshakes":[["Milkshake Fraise",150],["Milkshake Vanille",150],["Milkshake Chocolat",150],["Milkshake Lotus ou Oreo",200]],
+  "🌿 Mojitos & Froides":[["Mojito Classic",150],["Mojito Ananas",150],["Mojito Menthe",150],["Mojito Fraise",150],["Eau Gazeuse",80],["Eau Minérale",20],["Grande Eau Minérale",30],["Coca Cola",50],["Fanta",50],["Sprite",50]],
+  "🍨 Desserts":[["Salade De Fruit",150],["Banana Split",150],["Tiramisu",150],["Granola",150]],
+  "🥞 Crêpes & Gaufres":[["Oreo",150],["Lotus",150],["Nutella Banane",150]],
+  "🍦 Glaces":[["Glace Fraise",80],["Glace Vanille",80],["Glace Chocolat",80]],
+  "🍔 Burgers":[["Burger Classic",150],["Cheeseburger",180],["Egg Burger",200],["Chicken Burger",180],["Double Burger",250]],
+  "🌯 Snacks":[["Tacos Viande ou Poulet",150],["Baguettino Viande ou Poulet",150],["Chawarma Viande ou Poulet",150],["Panini Viande ou Poulet",150],["Sandwich Brochette V/P",200],["Sandwich Steack V/P",200]],
+  "🥪 Club Sandwich":[["Club Fromage",100],["Club Poulet",150],["Club Viande",150],["Club Thon",150],["Club Crispy",200]],
+  "🍗 Viandes":[["Demi Poulet",300],["Poulet Complet",500],["Brochette Poulet",400],["Basmati Poulet",250],["Escalope de Poulet",300],["Cordon Bleu",400],["Steak à l'ancienne",500],["Brochette De Bœuf",400]],
+  "🫕 Tajines":[["Tajine Poulet",350],["Tajine Viande",350],["Tajine Kefta",300]],
+  "🦐 Mer":[["Brochette Crevette",450],["Crevettes Pannées",500],["Crevettes Pli-Pli",600]],
+  "🥗 Salades":[["Salade Mixte",300],["Salade Niçoise",300],["Salade Caesar",350],["Salade Crevette",450]],
+  "🍝 Pâtes":[["Spaghetti Bolognaise",300],["Spaghetti Carbonara",400],["Tagliatelle Poulet",350],["Tagliatelle Viande",350],["Tagliatelle Fruit De Mer",450],["Lasagne Bolognaise",400],["Gratin Pomme De Terre",350]],
+  "🌅 Petits Déj":[["Classic",200],["Petit Dej Enfant",250],["Complet",300],["Latte Lounge",500]],
+  "🍳 Omelettes":[["Omelette Nature",100],["Omelette Thon",120],["Omelette Fromage",120],["Omelette Jambon",130],["Omelette Jambon Fromage",150]],
+};
+
+let serveuseNom='', panier={}, currentPage=1;
+
+// ── LOGIN ──
+window.checkLogin=function(){
+  const val=document.getElementById('serveuseNom').value.trim();
+  document.getElementById('loginBtn').disabled=val.length<2;
+};
+window.doLogin=function(){
+  const nom=document.getElementById('serveuseNom').value.trim();
+  if(nom.length<2)return;
+  serveuseNom=nom;
+  document.getElementById('loginScreen').style.transition='opacity .4s';
+  document.getElementById('loginScreen').style.opacity='0';
+  setTimeout(()=>document.getElementById('loginScreen').style.display='none',400);
+  document.getElementById('headerName').textContent='👩‍💼 '+serveuseNom;
+  sessionStorage.setItem('serveuse_nom',nom);
+  buildMenu();
+};
+window.doLogout=function(){
+  if(!confirm('Se déconnecter ?'))return;
+  sessionStorage.removeItem('serveuse_nom');
+  location.reload();
+};
+
+// Auto-login
+const savedNom=sessionStorage.getItem('serveuse_nom');
+if(savedNom){
+  serveuseNom=savedNom;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('headerName').textContent='👩‍💼 '+serveuseNom;
+  buildMenu();
+}
+
+// ── NAV ──
+window.goTo=function(page){
+  document.getElementById('page'+currentPage).classList.remove('active');
+  currentPage=page;
+  document.getElementById('page'+currentPage).classList.add('active');
+  window.scrollTo(0,0);
+  if(page===2)renderCart();
+};
+
+// ── MENU ──
+function buildMenu(){
+  const tabs=document.getElementById('catTabs'),content=document.getElementById('menuContent');
+  tabs.innerHTML='';content.innerHTML='';
+  Object.keys(MENU).forEach((cat,i)=>{
+    const tab=document.createElement('button');
+    tab.className='cat-pill'+(i===0?' active':'');tab.textContent=cat;
+    tab.onclick=()=>{document.querySelectorAll('.cat-pill').forEach(t=>t.classList.remove('active'));tab.classList.add('active');document.getElementById('cat'+i).scrollIntoView({behavior:'smooth',block:'start'});};
+    tabs.appendChild(tab);
+    const sec=document.createElement('div');sec.className='cat-section';sec.id='cat'+i;
+    const catTitle=document.createElement('div');catTitle.className='cat-name';catTitle.textContent=cat;
+    sec.appendChild(catTitle);
+    MENU[cat].forEach(([name,price])=>{
+      const row=document.createElement('div');row.className='item-row';row.id='irow-'+name;
+      const sn=name.replace(/'/g,"\\'");
+      row.innerHTML=`<div class="item-left"><div class="item-name">${name}</div></div><div class="item-right"><div class="item-price">${price} MRU</div><button class="item-add" onclick="addItem('${sn}',${price},this)">+</button></div>`;
+      sec.appendChild(row);
+    });
+    content.appendChild(sec);
+  });
+  restoreBadges();
+}
+
+window.addItem=function(name,price,btn){
+  if(panier[name])panier[name].qty++;else panier[name]={price,qty:1};
+  const row=document.getElementById('irow-'+name);if(row)row.classList.add('selected');
+  let b=btn.querySelector('.item-badge');
+  if(!b){b=document.createElement('div');b.className='item-badge';btn.style.position='relative';btn.appendChild(b);}
+  b.textContent=panier[name].qty;
+  updateCartBar();
+};
+
+function restoreBadges(){
+  Object.keys(panier).forEach(name=>{
+    const row=document.getElementById('irow-'+name);
+    if(!row)return;
+    row.classList.add('selected');
+    const btn=row.querySelector('.item-add');
+    let b=btn.querySelector('.item-badge');
+    if(!b){b=document.createElement('div');b.className='item-badge';btn.style.position='relative';btn.appendChild(b);}
+    b.textContent=panier[name].qty;
+  });
+}
+
+function updateCartBar(){
+  const items=Object.entries(panier);
+  const qty=items.reduce((s,[,v])=>s+v.qty,0);
+  const total=items.reduce((s,[,v])=>s+v.price*v.qty,0);
+  const bar=document.getElementById('cartBar');
+  const badge=document.getElementById('orderCount');
+  if(!qty){bar.classList.remove('visible');badge.style.display='none';return;}
+  bar.classList.add('visible');
+  badge.style.display='block';badge.textContent=qty+' article'+(qty>1?'s':'');
+  document.getElementById('cbQty').textContent=qty+' article'+(qty>1?'s':'');
+  document.getElementById('cbTotal').textContent=total+' MRU';
+}
+
+// ── CART ──
+function renderCart(){
+  const div=document.getElementById('cartItems');div.innerHTML='';let total=0;
+  Object.entries(panier).forEach(([name,{price,qty}])=>{
+    const sub=price*qty;total+=sub;
+    const el=document.createElement('div');el.className='cart-item';
+    const sn=name.replace(/'/g,"\\'");
+    el.innerHTML=`<div class="ci-name">${name}</div><div class="qty-ctrl"><button class="qty-btn" onclick="cartQty('${sn}',-1)">−</button><span class="qty-num">${qty}</span><button class="qty-btn" onclick="cartQty('${sn}',1)">+</button></div><div class="ci-price">${sub} MRU</div>`;
+    div.appendChild(el);
+  });
+  if(!Object.keys(panier).length)div.innerHTML='<div style="text-align:center;color:var(--muted);padding:30px">Panier vide</div>';
+  document.getElementById('totalVal').textContent=total+' MRU';
+}
+
+window.cartQty=function(name,delta){
+  if(!panier[name])return;
+  panier[name].qty+=delta;
+  if(panier[name].qty<=0){
+    delete panier[name];
+    const row=document.getElementById('irow-'+name);
+    if(row){row.classList.remove('selected');const b=row.querySelector('.item-badge');if(b)b.remove();}
+  } else {
+    const row=document.getElementById('irow-'+name);
+    if(row){const b=row.querySelector('.item-badge');if(b)b.textContent=panier[name].qty;}
+  }
+  updateCartBar();renderCart();
+};
+
+// ── ENVOYER ──
+window.envoyerCommande=async function(){
+  const btn=document.getElementById('btnValider');
+  btn.disabled=true;btn.textContent='⏳ Envoi en cours...';
+  const now=new Date(),pad=s=>String(s).padStart(2,'0');
+  const total=Object.values(panier).reduce((s,{price,qty})=>s+price*qty,0);
+  const order={
+    source:'serveuse',
+    serveuse:serveuseNom,
+    timestamp:now.toISOString(),
+    time:pad(now.getHours())+':'+pad(now.getMinutes()),
+    date:now.toLocaleDateString('fr-FR'),
+    items:Object.entries(panier).map(([name,{price,qty}])=>({name,price,qty,subtotal:price*qty})),
+    total,
+    notes:document.getElementById('notesInput').value.trim()||'',
+    status:'serveuse',
+  };
+  try{
+    await push(ref(db,'commandes_serveuse'),order);
+    renderConfirm(order);
+    goTo(3);
+    showToast();
+  }catch(e){
+    alert('❌ Erreur envoi. Vérifiez la connexion.');
+    btn.disabled=false;btn.textContent='✅ Envoyer à la caisse';
+  }
+};
+
+function renderConfirm(order){
+  document.getElementById('serveuseConfirmBadge').textContent='👩‍💼 '+serveuseNom;
+  const card=document.getElementById('confirmCard');let html='';
+  order.items.forEach(it=>{html+=`<div class="confirm-row"><span>${it.name} × ${it.qty}</span><span>${it.subtotal} MRU</span></div>`;});
+  html+=`<div class="confirm-row"><span>TOTAL</span><span>${order.total} MRU</span></div>`;
+  card.innerHTML=html;
+}
+
+function showToast(){
+  const t=document.getElementById('toast');t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+window.nouvelleCommande=function(){
+  panier={};
+  document.getElementById('notesInput').value='';
+  document.getElementById('menuContent').querySelectorAll('.item-row').forEach(r=>{r.classList.remove('selected');const b=r.querySelector('.item-badge');if(b)b.remove();});
+  document.getElementById('btnValider').disabled=false;
+  document.getElementById('btnValider').textContent='✅ Envoyer à la caisse';
+  updateCartBar();
+  goTo(1);
+};
+</script>
+</body>
+</html>
