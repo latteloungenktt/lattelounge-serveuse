@@ -224,7 +224,14 @@ const MENU={
   "🍳 Omelettes":[["Omelette Nature",100],["Omelette Thon",120],["Omelette Fromage",120],["Omelette Jambon",130],["Omelette Jambon Fromage",150]],
 };
 
-let serveuseNom='', panier={}, currentPage=1;
+let serveuseNom='', panier={}, currentPage=1, tableCounter=0;
+
+function getNextTable(){
+  tableCounter++;
+  // Persist counter in sessionStorage so it doesn't reset on page refresh
+  sessionStorage.setItem('serveuse_table_counter', tableCounter);
+  return tableCounter;
+}
 
 // ── LOGIN ──
 window.checkLogin=function(){
@@ -235,6 +242,8 @@ window.doLogin=function(){
   const nom=document.getElementById('serveuseNom').value.trim();
   if(nom.length<2)return;
   serveuseNom=nom;
+  // Restore table counter from session
+  tableCounter=parseInt(sessionStorage.getItem('serveuse_table_counter')||'0');
   document.getElementById('loginScreen').style.transition='opacity .4s';
   document.getElementById('loginScreen').style.opacity='0';
   setTimeout(()=>document.getElementById('loginScreen').style.display='none',400);
@@ -245,6 +254,7 @@ window.doLogin=function(){
 window.doLogout=function(){
   if(!confirm('Se déconnecter ?'))return;
   sessionStorage.removeItem('serveuse_nom');
+  sessionStorage.removeItem('serveuse_table_counter');
   location.reload();
 };
 
@@ -252,6 +262,7 @@ window.doLogout=function(){
 const savedNom=sessionStorage.getItem('serveuse_nom');
 if(savedNom){
   serveuseNom=savedNom;
+  tableCounter=parseInt(sessionStorage.getItem('serveuse_table_counter')||'0');
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('headerName').textContent='👩‍💼 '+serveuseNom;
   buildMenu();
@@ -357,9 +368,13 @@ window.envoyerCommande=async function(){
   btn.disabled=true;btn.textContent='⏳ Envoi en cours...';
   const now=new Date(),pad=s=>String(s).padStart(2,'0');
   const total=Object.values(panier).reduce((s,{price,qty})=>s+price*qty,0);
+  const tableNum=getNextTable();
+  const tableName=serveuseNom+' · Table '+tableNum;
   const order={
     source:'serveuse',
     serveuse:serveuseNom,
+    tableName,
+    tableNum,
     timestamp:now.toISOString(),
     time:pad(now.getHours())+':'+pad(now.getMinutes()),
     date:now.toLocaleDateString('fr-FR'),
@@ -380,7 +395,7 @@ window.envoyerCommande=async function(){
 };
 
 function renderConfirm(order){
-  document.getElementById('serveuseConfirmBadge').textContent='👩‍💼 '+serveuseNom;
+  document.getElementById('serveuseConfirmBadge').textContent='👩‍💼 '+order.serveuse+' · Table '+order.tableNum;
   const card=document.getElementById('confirmCard');let html='';
   order.items.forEach(it=>{html+=`<div class="confirm-row"><span>${it.name} × ${it.qty}</span><span>${it.subtotal} MRU</span></div>`;});
   html+=`<div class="confirm-row"><span>TOTAL</span><span>${order.total} MRU</span></div>`;
