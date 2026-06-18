@@ -222,7 +222,7 @@ const MENU={
   "🍝 Pâtes":[["Spaghetti Bolognaise",300],["Spaghetti Carbonara",400],["Tagliatelle Poulet",350],["Tagliatelle Viande",350],["Tagliatelle Fruit De Mer",450],["Lasagne Bolognaise",400],["Gratin Pomme De Terre",350]],
   "🌅 Petits Déj":[["Classic",200],["Petit Dej Enfant",250],["Complet",300],["Latte Lounge",500]],
   "🍳 Omelettes":[["Omelette Nature",100],["Omelette Thon",120],["Omelette Fromage",120],["Omelette Jambon",130],["Omelette Jambon Fromage",150]],
-  "🫀 Kebde":[["Kebde Petite",200],["Kebde Moyenne",400],["Kebde Grande",600]],
+  "🫀 Kebde":[["Kebde",0]],
 };
 
 let serveuseNom='', panier={}, currentPage=1, tableCounter=0;
@@ -293,13 +293,25 @@ function buildMenu(){
     MENU[cat].forEach(([name,price])=>{
       const row=document.createElement('div');row.className='item-row';row.id='irow-'+name;
       const sn=name.replace(/'/g,"\\'");
-      row.innerHTML=`<div class="item-left"><div class="item-name">${name}</div></div><div class="item-right"><div class="item-price">${price} MRU</div><button class="item-add" onclick="addItem('${sn}',${price},this)">+</button></div>`;
+      if(name==='Kebde'){
+        row.innerHTML=`<div class="item-left"><div class="item-name">🫀 Kebde</div></div><div class="item-right"><div class="item-price">Prix libre</div><button class="item-add" onclick="addKebde(this)">+</button></div>`;
+      } else {
+        row.innerHTML=`<div class="item-left"><div class="item-name">${name}</div></div><div class="item-right"><div class="item-price">${price} MRU</div><button class="item-add" onclick="addItem('${sn}',${price},this)">+</button></div>`;
+      }
       sec.appendChild(row);
     });
     content.appendChild(sec);
   });
   restoreBadges();
 }
+
+window.addKebde=function(btn){
+  const input=prompt('💰 Entrez le prix du Kebde (MRU) :');
+  if(input===null||input.trim()==='') return;
+  const price=parseInt(input.trim());
+  if(isNaN(price)||price<=0){ alert('❌ Prix invalide.'); return; }
+  addItem('Kebde',price,btn);
+};
 
 window.addItem=function(name,price,btn){
   if(panier[name])panier[name].qty++;else panier[name]={price,qty:1};
